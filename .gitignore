@@ -127,6 +127,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+env-vehicle-access-control
 
 # Spyder project settings
 .spyderproject
