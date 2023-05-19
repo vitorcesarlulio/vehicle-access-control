@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 from google.cloud import vision
-
+from google.cloud.vision_v1 import types
 
 
 def main():
@@ -13,57 +13,6 @@ def main():
     global image_annotator
     image_annotator = vision.ImageAnnotatorClient()
 
-    video = cv2.VideoCapture('plates_image/video720p.mkv', cv2.CAP_FFMPEG)
-    # O FFMPEG pode ser mais rápido para alguns formatos de vídeo. 
-    # Acelerar a leitura do vídeo com GPU
-    #cv2.CAP_DSHOW
-
-    # Ajusta o tamanho do buffer de leitura para 10
-    # Isso pode melhorar a velocidade de leitura, especialmente para vídeos de alta resolução.
-    video.set(cv2.CAP_PROP_BUFFERSIZE, 10) # acho que só adianta se eles precisarem ser processados varias vezes
-
-    # pré-carrega os primeiros 10 frames na memória
-    # o aumento no número de quadros pré-carregados pode aumentar o consumo de memória e afetar a performance do sistema se não houver memória suficiente disponível.
-    for i in range(20):  # acho que só adianta se eles precisarem ser processados varias vezes
-        video.grab()
-
-    folder_path = 'frames_video/'
-    frame_count = 0
-
-    while video.isOpened():
-        ret, frame = video.read()
-
-        if not ret:
-            break
-       
-        # Redimensiona os frames para 640x480
-        #area = cv2.resize(frame, (640, 480))
-        # focar somente na parte que quero do video
-        area = frame[500:, 300:800]
-
-        # Converte o quadro para o formato JPEG
-        success, encoded_frame = cv2.imencode(".jpg", area)
-        content = encoded_frame.tobytes()
-
-        # Salve o quadro como uma imagem na pasta
-        frame_path = os.path.join(folder_path, f'frame{frame_count}.jpg')
-        cv2.imwrite(frame_path, frame)
-
-        # Incremente o contador de quadros
-        frame_count += 1
-
-        #cv2.imshow('FRAME',area)
-
-        #findObject(area)
-
-        # pré-carrega o próximo frame na memória
-        video.grab()
-
-        if cv2.waitKey(1) == 27:
-            break
-
-    video.release()
-    cv2.destroyAllWindows()
     """
     file_name = r'plates_image/placa10.jpg'
     path = f'{file_name}'
@@ -78,6 +27,27 @@ def main():
     plate = extractText(imagem_bytes)"""
 
     #return plate
+
+def processFramesWithGoogleVision(frames):
+    # Crie um cliente do Google Vision
+    client = vision.ImageAnnotatorClient()
+
+    # Lista para armazenar os resultados de detecção de objetos
+    resultados = []
+
+    # Processa cada frame com a API do Google Vision
+    for frame in frames:
+        # Converte o frame para o formato de imagem do Google Vision
+        imagem = types.Image(content=cv2.imencode('.jpg', frame)[1].tobytes())
+
+        # Realiza a detecção de objetos na imagem
+        response = client.object_localization(image=imagem)
+
+        # Extrai os resultados de detecção de objetos da resposta
+        for obj in response.localized_object_annotations:
+            resultados.append(obj.name)
+
+    return resultados
 
 
 def findObject(content):
