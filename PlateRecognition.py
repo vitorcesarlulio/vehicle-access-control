@@ -5,7 +5,7 @@ from google.cloud import vision
 from google.cloud.vision_v1 import types
 
 
-def main():
+def main(content):
     # Variavel de ambiente para o arquivo de autenticação do Google Vision
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = r'google_vision_auth.json'
 
@@ -13,42 +13,9 @@ def main():
     global image_annotator
     image_annotator = vision.ImageAnnotatorClient()
 
-    """
-    file_name = r'plates_image/placa10.jpg'
-    path = f'{file_name}'
-
-    with open(path, 'rb') as image_file:
-        content = image_file.read()
-
-    array = findObject(content)
-
-    imagem_bytes = makeImg(array, path)
-
-    plate = extractText(imagem_bytes)"""
+    findObject(content)
 
     #return plate
-
-def processFramesWithGoogleVision(frames):
-    # Crie um cliente do Google Vision
-    client = vision.ImageAnnotatorClient()
-
-    # Lista para armazenar os resultados de detecção de objetos
-    resultados = []
-
-    # Processa cada frame com a API do Google Vision
-    for frame in frames:
-        # Converte o frame para o formato de imagem do Google Vision
-        imagem = types.Image(content=cv2.imencode('.jpg', frame)[1].tobytes())
-
-        # Realiza a detecção de objetos na imagem
-        response = client.object_localization(image=imagem)
-
-        # Extrai os resultados de detecção de objetos da resposta
-        for obj in response.localized_object_annotations:
-            resultados.append(obj.name)
-
-    return resultados
-
 
 def findObject(content):
     """
@@ -68,11 +35,11 @@ def findObject(content):
     array = []
     for object_ in objects:
         # extrair do objecets a confinaça pra salvar no banco
-        print(objects)
         if object_.name == 'License plate':
+            print("new", objects)
             # Insere em um array as posições X e Y dos pontos que forma a placa
-            for vertex in object_.bounding_poly.normalized_vertices:
-                array.append([vertex.x, vertex.y])
+     #       for vertex in object_.bounding_poly.normalized_vertices:
+     #           array.append([vertex.x, vertex.y])
 
     #return array
 
@@ -135,5 +102,5 @@ def extractText(imagem_bytes):
 
     return plate
 
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()

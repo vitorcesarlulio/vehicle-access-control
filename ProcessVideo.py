@@ -1,5 +1,6 @@
 import cv2
 import os
+import PlateRecognition
 
 def main():
     """
@@ -44,7 +45,7 @@ def decreaseFramesArray():
             raise Exception("Não foi possível abrir o vídeo")
 
         # Fator de redução da taxa de quadros (exemplo: reduzindo pela metade)
-        fator_reducao = 50
+        fator_reducao = 100
 
         # Lista para armazenar os frames processados
         frames_processados = []
@@ -72,7 +73,7 @@ def decreaseFramesArray():
                 # focar somente na parte que quero do video
                 #area = frame[500:, 300:800]
                 # focar somente na parte que quero do video
-                #area = frame_redimensionado[altura//2:, largura//2:largura]
+                frame = frame[altura//2:,:]
 
                 # Aplica a equalização de histograma para melhorar o contraste
                 # frame = cv2.equalizeHist(frame)
@@ -89,6 +90,10 @@ def decreaseFramesArray():
                 # acompanhar frames
                 cv2.imshow('Frames', frame)
                 ######### DEBUG - END ###########
+
+                # Reconhece objetos e extrai texto da placa
+                # passa como parametro o frame ja convertido para imagem
+                plateRecognition = PlateRecognition.main(cv2.imencode('.jpg', frame)[1].tobytes())
 
                 # Armazena o frame processado na lista
                 frames_processados.append(frame)
