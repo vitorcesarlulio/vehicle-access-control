@@ -162,5 +162,5 @@ cython_debug/
 
 useful/
 plates/
-frames_video/
 video_plate_recognition.MOV
+debug/*

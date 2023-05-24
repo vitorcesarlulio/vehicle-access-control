@@ -1,11 +1,14 @@
 import os
+import random
 import cv2
 import numpy as np
 from google.cloud import vision
 from google.cloud.vision_v1 import types
+import Useful
 
+debug = 1
 
-def main(content):
+def main(frame_bytes):
     # Variavel de ambiente para o arquivo de autenticação do Google Vision
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = r'google_vision_auth.json'
 
@@ -13,48 +16,64 @@ def main(content):
     global image_annotator
     image_annotator = vision.ImageAnnotatorClient()
 
-    findObject(content)
+    plate_vertices = findObject(frame_bytes)
+
+    # Verifico se houve algum objeto identificado
+    if plate_vertices:
+        makeImg(plate_vertices, frame_bytes)    
 
     #return plate
 
-def findObject(content):
+def findObject(frame_bytes):
     """
-    Localiza os objetos de uma imagem utilizando API Google Vision.
+        Localiza os objetos de uma imagem utilizando API Google Vision.
 
-    Args:
-    path: caminho para o imagem local
+        Args:
+            frame_bytes: imagem (frame) em formato binario.
+
+        Returns:
+            plate_vertices: vertices de onde se localiza a placa.
+
     """
 
-    image = vision.Image(content=content)
+    image = vision.Image(content=frame_bytes)
 
     objects = image_annotator.object_localization(
         image=image).localized_object_annotations
 
+    # Armazena os vertices de onde se encontra a placa
+    plate_vertices = []
+
     # Entre os objetos identificados, procura a placa
-    # essa var array teria que ser vertices ou coordenadas e mudar o nome dela em outros lugares tbm
-    array = []
-    for object_ in objects:
-        # extrair do objecets a confinaça pra salvar no banco
-        if object_.name == 'License plate':
-            print("new", objects)
-            # Insere em um array as posições X e Y dos pontos que forma a placa
-     #       for vertex in object_.bounding_poly.normalized_vertices:
-     #           array.append([vertex.x, vertex.y])
+    for object in objects:
+        # Extrair do objecets a confinaça pra salvar no banco
+        if object.name == 'License plate' and object.score >= 0.75:
+            if debug:
+                # Salvando frame que contem um objeto de placa, pra usar de debug
+                cv2.imwrite(os.path.join('debug/identified_plate/', f'identified_plate_{random.randint(1, 1000)}.jpg'), cv2.imdecode(np.frombuffer(frame_bytes, np.uint8), cv2.IMREAD_COLOR))
 
-    #return array
+            # Insere em um array as posições X e Y dos pontos que formam a placa
+            # NAO POSSO TER DUAS PLACAS NUMA FOTO (FRAME)
+            for vertex in object.bounding_poly.normalized_vertices:
+                plate_vertices.append([vertex.x, vertex.y])
+
+    return plate_vertices
 
 
-def makeImg(array, path):
+def makeImg(plate_vertices, frame_bytes):
     """
-    A partir de coordenadas X e Y monta imagem somente da região desejada
+        A partir de coordenadas X e Y monta imagem somente da região desejada
 
-    Args:
+        Args:  
+            frame_bytes: imagem (frame) em formato binario.
+            plate_vertices: vertices de onde se localiza a placa.
+        
+        Returns:
+
     """
-    # tem que melhorar pra ele nao deixar a imagem que ele ta gerando com os lados pretos, ter somente a placa
 
-    # tem que melhorar essa parada de ter que abrir a imagem original
-    imagem = cv2.imread(path)
-    vertices = np.array(array)
+    imagem = cv2.imdecode(np.frombuffer(frame_bytes, np.uint8), cv2.IMREAD_COLOR)
+    vertices = np.array(plate_vertices)
 
     # Obtenha a altura e a largura da imagem
     altura, largura, _ = imagem.shape
@@ -65,20 +84,17 @@ def makeImg(array, path):
     # Converta as coordenadas de pixel para inteiro
     vertices_pixel_int = vertices_pixel.astype(np.int32)
 
-    # Crie uma máscara para o polígono delimitador
-    mascara = np.zeros((altura, largura), dtype=np.uint8)
-    cv2.fillPoly(mascara, [vertices_pixel_int], (255, 255, 255))
+    # Obtenha os retângulos delimitadores (x, y, largura, altura) da ROI
+    x, y, w, h = cv2.boundingRect(vertices_pixel_int)
 
-    # Aplique a máscara na imagem
-    imagem_cortada = cv2.bitwise_and(imagem, imagem, mask=mascara)
+    # Recorte a região de interesse da imagem com base nos retângulos delimitadores
+    imagem_cortada = cv2.getRectSubPix(imagem, (w, h), (x + w/2, y + h/2))
 
-    # Ao inves de salvar, prepara a imagem para carregar no google vision + performatico
-    imagem_bytes = cv2.imencode('.jpg', imagem_cortada)[1].tobytes()
+    if debug:
+        # Salvando imagem da placa recortada
+        cv2.imwrite(os.path.join('debug/cut_plate/', f'cut_plate_{random.randint(1, 1000)}.jpg'), imagem_cortada)
 
-    # Salve a imagem cortada (- performatico)
-    # cv2.imwrite("cortado.jpg", imagem_cortada)
-
-    return imagem_bytes
+    #return imagem_bytes
 
 
 def extractText(imagem_bytes):

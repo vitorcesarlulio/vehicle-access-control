@@ -1,6 +1,11 @@
+import sys
 import cv2
 import os
 import PlateRecognition
+import Useful
+import time
+
+debug = 1
 
 def main():
     """
@@ -14,6 +19,11 @@ def main():
     """
     global video_path
     video_path = 'video_plate_recognition.MOV'
+
+    if debug:
+        Useful.delete_directory_files('debug/reduced_video_frames/')
+        Useful.delete_directory_files('debug/cut_plate/')
+        Useful.delete_directory_files('debug/identified_plate/')
 
     try:
         decreaseFramesArray()
@@ -47,9 +57,6 @@ def decreaseFramesArray():
         # Fator de redução da taxa de quadros (exemplo: reduzindo pela metade)
         fator_reducao = 100
 
-        # Lista para armazenar os frames processados
-        frames_processados = []
-
         # Define o tamanho desejado para redução do video
         largura = 640
         altura = 480
@@ -78,25 +85,19 @@ def decreaseFramesArray():
                 # Aplica a equalização de histograma para melhorar o contraste
                 # frame = cv2.equalizeHist(frame)
 
-                ######### DEBUG - START ###########
-                """
-                # Converte o quadro para o formato JPEG
-                success, encoded_frame = cv2.imencode(".jpg", frame)
-                content = encoded_frame.tobytes()
+                if debug:
+                    # Salve o quadro como uma imagem na pasta
+                    cv2.imwrite(os.path.join('debug/reduced_video_frames/', f'reduced_video_frames_{count}.jpg'), frame)
 
-                # Salve o quadro como uma imagem na pasta
-                frame_path = os.path.join('frames_video/', f'frame{count}.jpg')
-                cv2.imwrite(frame_path, frame)"""
-                # acompanhar frames
-                cv2.imshow('Frames', frame)
-                ######### DEBUG - END ###########
+                    # Acompanhar frames
+                    cv2.imshow('Reduced Video Frames', frame)
+
 
                 # Reconhece objetos e extrai texto da placa
                 # passa como parametro o frame ja convertido para imagem
-                plateRecognition = PlateRecognition.main(cv2.imencode('.jpg', frame)[1].tobytes())
+                PlateRecognition.main(cv2.imencode('.jpg', frame)[1].tobytes())
 
-                # Armazena o frame processado na lista
-                frames_processados.append(frame)
+                #time.sleep(1.5)
 
                 # Espera por uma tecla pressionada para avançar para o próximo frame
                 if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -110,7 +111,7 @@ def decreaseFramesArray():
         # descometnar se usar cv2.imshow
         cv2.destroyAllWindows()
 
-        return frames_processados
+        #return frames_processados
 
     except Exception as e:
         print("Ocorreu um erro:", str(e))
