@@ -1,5 +1,7 @@
+from random import randint
+import uuid
+import re
 import os
-import random
 import cv2
 import numpy as np
 from google.cloud import vision
@@ -7,6 +9,7 @@ import Main
 import datetime
 
 score_detection_object = 0.75
+extract_plates = []
 
 def main(frame_bytes):
     # Variavel de ambiente para o arquivo de autenticação do Google Vision
@@ -112,41 +115,25 @@ def extractTextPlate(cut_plate_frame_bytes):
     texts = image_annotator.text_detection(
     image=image).text_annotations
 
-    print("entrei no metodo")
+    if not texts:
+        extract_plates.append("Placa não identificada " + str(uuid.uuid4()))
 
-    if texts == "":
-        print("texto vazio, acho que n identificou placa")
-        # aqui é o momento de classificar status como não identificado (pq realmente, na foto não achou texto nenhum)
-        # é meio falho masss, pq pode ser que ele identifique algum texto, mas não seja de placa rs que é o else lá em baixo
+    # Criando regras regex (não valida nada ainda)
+    old_plate_pattern = re.compile(r'^[A-Z]{3}[0-9]{4}$')
+    new_plate_pattern = re.compile(r'^[A-Z]{3}[0-9][A-Z][0-9]{2}$')
 
     for text in texts:
-        #if Main.debug:
-        #    print("text:", text.description)
-
         # Removendo caracteres da placa
         clean_plate = text.description.replace(" ", "").replace("-", "")
 
-        """
-        Caso identifique mais textos, por exemplo cidade
-        # Quebrar texto em array
-        clean_plate = clean_plate.split('\n')
-        print("Depois de fazer o que n sei:", clean_plate)
-
-        # For para varrer o array (caso tenha mais de tum texto, imagina uma cidade)
-        for plate_txt in clean_plate:
-            if len(plate_txt) == 7:
-                plate = plate_txt
-                print("Placa = 7:", plate)
-            else:
-                plate = "Placa não identificada"
-                print("Placa != 7:", plate)
-        """
-
         # tem que melhorar essa regra
-        if len(clean_plate) == 7:
-            plate = clean_plate
+        if len(clean_plate) == 7 and (old_plate_pattern.match(clean_plate) or new_plate_pattern.match(clean_plate)) and (clean_plate not in extract_plates):
+            # ignorado os textos de um unico frame que venha só "-" ou "1234"
+            extract_plates.append(clean_plate)
         else:
-            plate = plate + " - Placa não identificada"
-
-
-    #return plate
+            0==0
+            # SE NÃO É UMA PLACA JÁ ERA
+            # Só que, se ele identifocu texto da placa porem nao foi classificado como uma placa eu vou perder essa identificação/registro HOJE NAO É NECESSIDADE
+            # eu nem teria esse else na teoria, pq seria apenas um texto qualquer na imagem
+            # porem, dependendo do frame, da placa, angulo tals, ele pode extrair parte da placa (nao necessariamente nao extrair nenhum caractere)
+            #extract_plates.append("Placa não identificada " + str(randint(1, 100))) # essa parte do randomico pode ser falho
