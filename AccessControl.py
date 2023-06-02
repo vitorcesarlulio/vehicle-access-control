@@ -5,17 +5,28 @@ import logging
 import datetime
 from datetime import date
 
+def main():
+    placa = "EAI8695"
+
+    conectar_banco()
+    status = verificar_veiculo(placa)
+    entrada_existente = verificar_entrada_existente(placa)
+
+    if not entrada_existente:
+        inserir_veiculo(placa, status)
+     
+    desconectar_banco()
+
 # Configuração do logger - melhorar a visibilidade dos prints tanto de retorno quanto de erro presentes no código
 logging.basicConfig(filename='app.log', level=logging.INFO)  # Define o nível de logging para INFO
 
 # Criação de um manipulador de logging para exibir mensagens no console
 console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.CRITICAL)
 
 # Adiciona o manipulador de console ao logger raiz
 logger = logging.getLogger()
 logger.addHandler(console_handler)
-
 
 conn = None  # Declaração da variável de conexão global
 
@@ -25,7 +36,6 @@ class VeiculoStatus:
     NAO_IDENTIFICADO = 3
 
 def conectar_banco():
-    global conn  # Indica que estamos utilizando a variável de conexão global
     try:
         conn = mysql.connector.connect(
             host="127.0.0.1:3306",
@@ -35,13 +45,13 @@ def conectar_banco():
         )
         if conn.is_connected():
             logging.info("Conexão estabelecida com o banco de dados.")
-            return conn
+
+        desconectar_banco()
 
     except mysql.connector.Error as error:
         logging.error("Erro ao conectar-se ao banco de dados: %s", error)
 
 def desconectar_banco():
-    global conn  # Indica que estamos utilizando a variável de conexão global
     try:
         conn.close()
         logging.info("Desconectado do banco de dados.")
@@ -49,84 +59,60 @@ def desconectar_banco():
     except mysql.connector.Error as error:
         logging.error("Erro ao desconectar-se do banco de dados: %s", error)
 
-def verificar_veiculo(placa):
-    conectar_banco()  # Chamada para estabelecer a conexão
+def verificar_veiculo(placa):  # Chamada para estabelecer a conexão
     cursor = conn.cursor()
 
-    consulta_verificar = "SELECT COUNT(*) FROM veiculos WHERE placa = %s"
+    consulta_verificar = "SELECT COUNT(placa) FROM veiculos WHERE placa = %s"
     dados_verificar = (placa,)
 
     cursor.execute(consulta_verificar, dados_verificar)
     resultado_verificar = cursor.fetchone()
 
     if resultado_verificar[0] == 0:
-        logging.info("Veículo não existe no banco de dados!")
+        logging.debug("Veículo não existe no banco de dados!")
         return VeiculoStatus.NAO_CADASTRADO
     else:
-        logging.info("Veículo já existe no banco de dados!")
+        logging.debug("Veículo já existe no banco de dados!")
         return VeiculoStatus.CADASTRADO
 
     cursor.close()
 
-def inserir_veiculo(placa):
+def inserir_veiculo(placa, status):
     cursor = conn.cursor()
 
-    consulta_inserir = "INSERT INTO acessos (placa_veiculo) VALUES (%s)"
-    dados_inserir = (placa,)
+    consulta_inserir = """
+    INSERT INTO acessos (placa_veiculo, status_veiculo, data_hora_entrada)
+    VALUES (%s, %s, NOW())
+    """
+    dados_inserir = (placa, status)
 
     cursor.execute(consulta_inserir, dados_inserir)
     conn.commit()
-    logging.info("Veículo inserido com sucesso!")
+    logging.debug("Veículo inserido com sucesso!")
 
     cursor.close()
-    
 
 def verificar_entrada_existente(placa):
-    hoje = date.today().strftime("%D-%M-%Y")
-
     cursor = conn.cursor()
 
-    consulta_verificar = "SELECT COUNT(*) FROM acessos WHERE placa_veiculo = %s AND data_entrada = %s"
-    dados_verificar = (placa, hoje)
+    consulta_verificar = """
+    SELECT COUNT(*) FROM acessos
+    WHERE placa_veiculo = %s AND data_hora_entrada BETWEEN NOW() - INTERVAL 5 MINUTE AND NOW()
+    """
+    dados_verificar = (placa,)
 
     cursor.execute(consulta_verificar, dados_verificar)
     resultado_verificar = cursor.fetchone()
 
     if resultado_verificar[0] > 0:
-        logging.warning("Entrada já registrada para o veículo no dia de hoje!")
+        logging.warning("Entrada já registrada para o veículo nos últimos 5 minutos!")
+        cursor.close()
         return True
     else:
         return False
 
-    cursor.close()
     desconectar_banco()  # Chamada para desconectar do banco de dados
-
-def main():
-    placa = "EAI8695"
-
-    conectar_banco()
-    status = verificar_veiculo(placa)
-
-    if status == VeiculoStatus.CADASTRADO:
-        logging.info("Veículo cadastrado.")
-
-        if not verificar_entrada_existente(placa):
-            inserir_veiculo(placa)
-    elif status == VeiculoStatus.NAO_CADASTRADO:
-        logging.warning("Veículo não cadastrado.")
-
-        if not verificar_entrada_existente(placa):
-            inserir_veiculo(placa)
-    elif status == VeiculoStatus.NAO_IDENTIFICADO:
-        logging.warning("Placa não identificada.")
-    
-    desconectar_banco()
 
 # Execução do programa principal
 if __name__ == "__main__":
     main()
-
-# Exemplo de uso do logger
-logger.info("Esta é uma mensagem de informação.")
-logger.warning("Esta é uma mensagem de aviso.")
-logger.error("Esta é uma mensagem de erro.")
