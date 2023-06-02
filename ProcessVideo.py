@@ -6,7 +6,7 @@ import Main
 
 # Variaveis globais para controle
 # Fator de redução da taxa de quadros (exemplo: reduzindo pela metade)
-fator_reducao = 20 # 30 frames = 194.553291 segundos 20 frames = 
+fator_reducao = 10 # 30 frames = 194.553291 segundos 20 frames = 
 # Define o tamanho desejado para redução do video
 largura = 640
 altura = 480

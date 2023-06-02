@@ -1,3 +1,4 @@
+from Levenshtein import distance
 from random import randint
 import uuid
 import re
@@ -8,7 +9,8 @@ from google.cloud import vision
 import Main
 import datetime
 
-score_detection_object = 0.75
+SCORE_DETECTION_OBJECT = 0.75
+THRESHOLD_SIMILAR_PLATE = 1
 extract_plates = []
 
 def main(frame_bytes):
@@ -54,7 +56,7 @@ def findObjects(frame_bytes):
     # Entre os objetos identificados, procura a placa
     for object in objects:
         # Extrair do objecets a confinaça pra salvar no banco
-        if object.name == 'License plate' and object.score >= score_detection_object:
+        if object.name == 'License plate' and object.score >= SCORE_DETECTION_OBJECT:
             if Main.debug:
                 file_name = datetime.datetime.now().strftime("identified_plate_%H-%M-%S_%f")[:-3] + ".jpg"
                 # Salvando frame que contem um objeto de placa, pra usar de debug
@@ -126,10 +128,16 @@ def extractTextPlate(cut_plate_frame_bytes):
         # Removendo caracteres da placa
         clean_plate = text.description.replace(" ", "").replace("-", "")
 
-        # tem que melhorar essa regra
-        if len(clean_plate) == 7 and (old_plate_pattern.match(clean_plate) or new_plate_pattern.match(clean_plate)) and (clean_plate not in extract_plates):
-            # ignorado os textos de um unico frame que venha só "-" ou "1234"
-            extract_plates.append(clean_plate)
+        """
+        1. Verifico se a string limpa possui 7 caracteres
+        2. Verifico se a string se encaixa nas regras regex de placas
+        3. Verifico se aquela placa já não existe em meu array de placas (pode ser mais eficiente verificar só ultima posição do array)
+        4. Verifico se a placa atual é diferente da ultima placa do array (quanto maior, mais diferentes são)
+        """
+        if len(clean_plate) == 7 and (old_plate_pattern.match(clean_plate) or new_plate_pattern.match(clean_plate)):
+            if not extract_plates or (extract_plates and clean_plate != extract_plates[-1] and clean_plate not in extract_plates) and (distance(clean_plate, extract_plates[-1]) > 1):
+                # ignorado os textos de um unico frame que venha só "-" ou "1234"
+                extract_plates.append(clean_plate)
         else:
             0==0
             # SE NÃO É UMA PLACA JÁ ERA
