@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Dashboard - Controle de Acesso de Veículos</title>
+</head>
+
+<body>
+	<div class="container">
+		<div class="line">
+			<div>
+				<h2>Acesso de Veículos - UNISAL Campus Maria Auxiliadora</h2>
+			</div>
+			<div>
+				<img src="https://unisal.br/wp-content/uploads/2022/07/logotipo_unisal_icon_new_colors.svg"
+					class="jet-logo__img img-top-right" alt="UNISAL" width="103" height="47">
+			</div>
+		</div>
+		<table>
+			<thead>
+				<tr>
+					<th>Placa</th>
+					<th>Marca</th>
+					<th>Modelo</th>
+					<th>Proprietario do Veículo</th>
+					<th>Entrada - Data e Hora</th>
+					<th>Status do Veículo</th>
+				</tr>
+			</thead>
+			<tbody id="tabela-veiculos">
+				<% veiculos.forEach(function(veiculo) { %>
+				<tr>
+					<td><%= veiculo.placa %></td>
+					<td><%= veiculo.marca %></td>
+					<td><%= veiculo.modelo %></td>
+					<td><%= veiculo.cor %></td>
+					<td><%= veiculo.ano %></td>
+					<td><%= veiculo.status %></td>
+				</tr>
+				<% }); %>
+			</tbody>
+		</table>
+
+		<div class="filter">
+			<label>Filtrar por:</label>
+			<select id="filter-select">
+				<option value="Todos">Todos</option>
+				<option value="Ainda se Encontra na Faculdade">Ainda se Encontra na Faculdade</option>
+				<option value="Não se Encontra na Faculdade">Não se Encontra na Faculdade</option>
+				<option value="Placa Não Cadastrada">Placa Não Cadastrada</option>
+			</select>
+			<button class="btn" onclick="filterTable()">Aplicar</button>
+		</div>
+
+		<div class="alert">
+			<p><strong>Alerta:</strong> Um veículo suspeito foi detectado na portaria.</p>
+		</div>
+		</div>
+</body>
+</html>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script>
+			function atualizarDadosVeiculos() {
+				$.ajax({
+					url: '/veiculos',
+					method: 'GET',
+					dataType: 'json',
+					success: function (data) {
+						$('#tabela-veiculos').empty();
+						data.forEach(function (veiculo) {
+							var linha = '<tr>' +
+								'<td>' + veiculo.placa + '</td>' +
+								'<td>' + veiculo.marca + '</td>' +
+								'<td>' + veiculo.modelo + '</td>' +
+								'<td>' + veiculo.cor + '</td>' +
+								'<td>' + veiculo.ano + '</td>' +
+								'<td>' + veiculo.status + '</td>' +
+								'</tr>';
+							$('#tabela-veiculos').append(linha);
+						});
+					},
+					error: function (error) {
+						console.error('Erro na requisição:', error);
+					}
+				});
+			}
+		
+			// Executar a função inicialmente
+			atualizarDadosVeiculos();
+		
+	// Executar a função a cada minuto
+	setInterval(atualizarDadosVeiculos, 60000);
+
+	function filterTable() {
+		var filterValue = document.getElementById("filter-select").value;
+		var tableRows = document.getElementsByTagName("tr");
+
+		for (var i = 1; i < tableRows.length; i++) {
+			var status = tableRows[i].getElementsByTagName("td")[5].innerText;
+
+			if (filterValue === "Todos" || filterValue === status) {
+				tableRows[i].style.display = "";
+			} else {
+				tableRows[i].style.display = "none";
+			}
+		}
+	}
+</script>
+
+<style>
+	body {
+		font-family: Arial, sans-serif;
+		background-color: #F5F5F5;
+	}
+
+	.container {
+		width: 1100px;
+		margin: 0 auto;
+		padding: 20px;
+		background-color: #FFF;
+		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+		border-radius: 5px;
+	}
+
+	h2 {
+		margin: 0;
+		font-size: 24px;
+		font-weight: bold;
+		color: #4086F3;
+	}
+
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-top: 20px;
+	}
+
+	th,
+	td {
+		padding: 10px;
+		text-align: left;
+		border-bottom: 1px solid #DDD;
+	}
+
+	th {
+		background-color: #4086F3;
+		color: #FFF;
+		text-align: center;
+	}
+
+	tr:hover {
+		background-color: #F5F5F5;
+	}
+
+	.filter {
+		margin-top: 20px;
+	}
+
+	.filter label {
+		font-weight: bold;
+		margin-right: 10px;
+	}
+
+	td {
+		text-align: center;
+	}
+
+	.filter select {
+		padding: 5px;
+		border: 1px solid #CCC;
+		border-radius: 3px;
+		font-size: 14px;
+	}
+
+	.btn {
+		background-color: #4086F3;
+		color: #FFF;
+		border: none;
+		border-radius: 3px;
+		padding: 10px 20px;
+		cursor: pointer;
+		transition: background-color 0.2s;
+	}
+
+	.btn:hover {
+		background-color: #2C3E50;
+	}
+
+	.alert {
+		padding: 20px;
+		margin-top: 20px;
+		background-color: #F44336;
+		color: #FFF;
+		border-radius: 5px;
+		font-size: 16px;
+	}
+
+	.alert p {
+		margin: 0;
+	}
+
+	.line {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.5rem;
+	}
+</style>

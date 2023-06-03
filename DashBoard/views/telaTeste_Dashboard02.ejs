@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Controle de Acesso de Veículos</title>
+    <!--<link rel=”stylesheet” type=”text/css” href=”Estilo.css”>-->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 95vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            background-color: #F5F5F5;
+        }
+
+        .container {
+            width: 1450px;
+            max-height: 400px;
+            /* Adicionado tamanho máximo ao contêiner */
+            padding: 20px;
+            background-color: #FFF;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            overflow-y: auto;
+            /* Adicionado overflow-y */
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #3F51B5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #DDD;
+        }
+
+        th {
+            background-color: #3F51B5;
+            color: #FFF;
+        }
+
+        tr:hover {
+            background-color: #F5F5F5;
+        }
+
+        tbody {
+            min-width: 250px;
+            overflow-y: auto;
+        }
+
+        .filter-container {
+            display: flex;
+            justify-content:flex-start;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .filter {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+        }
+
+        .filter label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .filter select {
+            padding: 5px;
+            border: 1px solid #CCC;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        .btn {
+            background-color: #3F51B5;
+            color: #FFF;
+            border: none;
+            border-radius: 3px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-left:5px;
+        }
+
+        .btnproprietario {
+            background-color: #3F51B5;
+            color: #FFF;
+            border: none;
+            border-radius: 3px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-left:5px;
+        }
+
+        .btn:hover,.btnproprietario:hover  {
+            background-color: #2C3E50;
+        }
+
+        .alert {
+            padding: 20px;
+            margin-top: 20px;
+            background-color: #F44336;
+            color: #FFF;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .alert p {
+            margin: 0;
+        }
+
+        /* Estilos para os retângulos de informação */
+        .info-container {
+            position: absolute;
+            top: 50%;
+            left: 18%;
+            transform: translate(-50%, -300%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+
+        .info-container2 {
+            position: absolute;
+            top: 50%;
+            left: 55%;
+            transform: translate(-50%, -300%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+
+        .info-container3 {
+            position: absolute;
+            top: 50%;
+            left: 95%;
+            transform: translate(-50%, -300%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+
+        .info-widget {
+            text-align: center;
+            padding: 10px 20px;
+            background-color: #FFF;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            margin-right: 20px;
+        }
+
+        /* Margin -Right Remover o espaçamento horizontal com os demais widgets */
+        .info-widget-first {
+            text-align: center;
+            padding: 0px 20px;
+            background-color: #FFF;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            margin-right: 200px;
+            width: 600px;
+        }
+
+        .info-widget-Second {
+            text-align: center;
+            padding: 0px 20px;
+            background-color: #FFF;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            margin-right: 200px;
+            width: 600px;
+        }
+
+        .info-widget-Third {
+            text-align: center;
+            padding: 0px 0px;
+            background-color: #FFF;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            margin-right: 200px;
+            width: 600px;
+        }
+
+        .info-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3F51B5;
+            margin-bottom: 10px;
+        }
+
+        .info-value {
+            font-size: 30px;
+            color: #333;
+        }
+    </style>
+    <script>
+        function filterTable() {
+            var filterValue = document.getElementById("filter-select").value;
+            var tableRows = document.getElementsByTagName("tr");
+
+            for (var i = 1; i < tableRows.length; i++) {
+                var status = tableRows[i].getElementsByTagName("td")[5].innerText;
+
+                if (filterValue === "Todos" || filterValue === status) {
+                    tableRows[i].style.display = "";
+                } else {
+                    tableRows[i].style.display = "none";
+                }
+            }
+        }
+        function filterTableByProprietario() {
+            var filterValue = document.getElementById("filter-input-proprietario").value.toLowerCase();
+            var tableRows = document.getElementsByTagName("tr");
+
+            for (var i = 1; i < tableRows.length; i++) {
+                var proprietario = tableRows[i].getElementsByTagName("td")[3].innerText.toLowerCase();
+
+                if (filterValue === "" || proprietario.includes(filterValue)) {
+                    tableRows[i].style.display = "";
+                } else {
+                    tableRows[i].style.display = "none";
+                }
+            }
+        }
+        // Obter a data atual
+        var currentDate = new Date();
+
+        // Formatando a data para o formato desejado (exemplo: DD/MM/AAAA)
+        var formattedDate = currentDate.toLocaleDateString("pt-BR");
+
+        // Inserindo a data nos widgets
+        document.getElementById("date-first").innerText = formattedDate;
+        document.getElementById("date-second").innerText = formattedDate;
+        document.getElementById("date-third").innerText = formattedDate;
+    </script>
+</head>
+
+<body>
+    <div class="info-container">
+        <div class="info-widget-first">
+            <div class="info-title">Total de Entradas na Faculdade</div>
+            <div class="info-value">8</div> <!-- Valor atualizado -->
+        </div>
+    </div>
+    <div class="info-container2">
+        <div class="info-widget-Second">
+            <div class="info-title">Total de Saídas da Faculdade</div>
+            <div class="info-value">2</div> <!-- Valor atualizado -->
+        </div>
+    </div>
+    <div class="info-container3">
+        <div class="info-widget-Third">
+            <div class="info-title">Ainda se Encontram na Faculdade</div>
+            <div class="info-value">6</div> <!-- Valor atualizado -->
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Acesso de Veículos</h2>
+        <div class="alert">
+            <p><strong>Alerta:</strong> Dois veículos suspeitos foram detectados na portaria.
+            </p>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Placa</th>
+                    <th>Modelo</th>
+                    <th>Cor</th>
+                    <th>Proprietario do Veículo</th>
+                    <th>Entrada - Data e Hora </th>
+                    <th>Saída - Data e Hora </th>
+                    <th>Status do Veículo </th>
+                </tr>
+
+            </thead>
+            <tbody>
+                <!-- Linhas de dados aqui -->
+                <tr>
+                    <td>ABC-1234</td>
+                    <td>Honda Civic</td>
+                    <td>Preto</td>
+                    <td>Davi Ricci Archângelo</td>
+                    <td>10/05/2023 08:00</td>
+                    <td>10/05/2023 00:00</td>
+                    <td>Ainda se Encontra na Faculdade</td>
+                </tr>
+                <tr>
+                    <td>ABC-0102</td>
+                    <td>Toyota Corolla</td>
+                    <td>Branco</td>
+                    <td>Daniel Ricci Archângelo</td>
+                    <td>11/05/2023 08:00</td>
+                    <td>10/05/2023 11:55</td>
+                    <td>Placa Não Cadastrada</td>
+
+                </tr>
+                <tr>
+                    <td>ABC-0022</td>
+                    <td>Fiat Pulse</td>
+                    <td>Cinza</td>
+                    <td>Noel Archângelo Junior</td>
+                    <td>11/05/2023 18:52</td>
+                    <td>11/05/2023 00:00</td>
+                    <td>Não se Encontra Mais na Faculdade</td>
+
+                </tr>
+                <tr>
+                    <td>ABC-0023</td>
+                    <td>volkswagen nivus</td>
+                    <td>Cinza</td>
+                    <td>Vitor César Lulio</td>
+                    <td>12/05/2023 18:55</td>
+                    <td>12/05/2023 00:00</td>
+                    <td>Ainda se Encontra na Faculdade</td>
+
+                </tr>
+                <tr>
+                    <td>CDE-0201</td>
+                    <td>Honda City</td>
+                    <td>Preto</td>
+                    <td>Pedro Henrique da Silva</td>
+                    <td>12/05/2023 19:01</td>
+                    <td>12/05/2023 00:00</td>
+                    <td>Ainda se Encontra na Faculdade</td>
+
+                </tr>
+                <tr>
+                    <td>CDE-1234</td>
+                    <td>Saveiro</td>
+                    <td>Vermelha</td>
+                    <td>Murilo Medeiros</td>
+                    <td>11/05/2023 18:52</td>
+                    <td>11/05/2023 22:12</td>
+                    <td>Placa Não Cadastrada</td>
+
+                </tr>
+                <tr>
+                    <td>CDE-1234</td>
+                    <td>ECOSPORT</td>
+                    <td>Branco</td>
+                    <td>Matheus Santon</td>
+                    <td>11/05/2023 18:52</td>
+                    <td>11/05/2023 00:00</td>
+                    <td>Ainda se Encontra na Faculdade</td>
+
+                </tr>
+                <tr>
+                    <td>CDE-1212</td>
+                    <td>FORD Focus</td>
+                    <td>Preto</td>
+                    <td>Denis Marcos</td>
+                    <td>11/05/2023 18:58</td>
+                    <td>11/05/2023 00:00</td>
+                    <td>Ainda se Encontra na Faculdade</td>
+
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="filter-container">
+            <div class="filter">
+                <label>Status do Veículo: </label>
+                <select id="filter-select">
+                    <option value="Todos">Todos</option>
+                    <option value="Ainda se Encontra na Faculdade">Ainda se Encontra na Faculdade</option>
+                    <option value="Não se Encontra Mais na Faculdade">Não se Encontra Mais na Faculdade</option>
+                    <option value="Placa Não Cadastrada">Placa Não Cadastrada</option>
+                </select>
+                <button class="btn" onclick="filterTable()">Aplicar</button>
+            </div>
+            <div class="filter">
+                <label>Proprietário do Veículo: </label>
+                <input type="text" id="filter-input-proprietario" placeholder="Digite o nome do proprietário">
+                <button class="btnproprietario" onclick="filterTableByProprietario()">Aplicar</button>
+            </div>
+        </div>
+
+
+        <!--<div class="filter">
+			<label>Filtrar por:</label>
+			<select>
+				<option>Ainda se Encontra na Faculdade</option>
+				<option>Não se Encontra Mais na Faculdade</option>
+				<option>Placa Não Cadastrada</option>
+			</select>
+			<button class="btn">Aplicar</button>
+		</div>
+
+		<div class="alert">
+			<p><strong>Alerta:</strong> Dois veículos suspeitos foram detectados na portaria. -->
