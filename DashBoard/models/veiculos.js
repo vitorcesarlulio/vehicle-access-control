@@ -26,14 +26,14 @@ const db = require('./db');
     timestamps: false 
 });
 
-function atualizarConsulta() {
-    Veiculo.findAll().then(veiculos => {
-        console.log(veiculos);
-    }).catch(error => {
-        console.error('Erro na consulta:', error);
-    });
-}
-atualizarConsulta();
-setInterval(atualizarConsulta, 60000);
+// function atualizarConsulta() {
+//     Veiculo.findAll().then(veiculos => {
+//         console.log(veiculos);
+//     }).catch(error => {
+//         console.error('Erro na consulta:', error);
+//     });
+// }
+// atualizarConsulta();
+// setInterval(atualizarConsulta, 60000);
 
 module.exports = Veiculo;

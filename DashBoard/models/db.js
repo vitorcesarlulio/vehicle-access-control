@@ -1,14 +1,14 @@
 const Sequelize = require('sequelize')
 
 
-const sequelize = new Sequelize("controleacesso","root", "",{
+const sequelize = new Sequelize("controleacesso", "root", "", {
     host: 'localhost',
     dialect: 'mysql',
 })
 
-sequelize.authenticate().then(function(){
+sequelize.authenticate().then(function () {
     console.log('deu bom familia');
-}).catch(function(){
+}).catch(function () {
     console.log('deu ruim');
 });
 

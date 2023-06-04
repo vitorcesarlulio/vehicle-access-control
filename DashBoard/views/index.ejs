@@ -7,8 +7,10 @@
 </head>
 
 <body>
+
 	<div class="container">
 		<div class="line">
+
 			<div>
 				<h2>Acesso de Veículos - UNISAL Campus Maria Auxiliadora</h2>
 			</div>
@@ -30,18 +32,21 @@
 			</thead>
 			<tbody id="tabela-veiculos">
 				<% veiculos.forEach(function(veiculo) { %>
+				<% acessos.forEach(function(acesso) { %>
+				<% if (veiculo.placa === acesso.placa_veiculo) { %>
 				<tr>
-					<td><%= veiculo.placa %></td>
+					<td><%= acesso.placa_veiculo %></td>
 					<td><%= veiculo.marca %></td>
 					<td><%= veiculo.modelo %></td>
-					<td><%= veiculo.cor %></td>
-					<td><%= veiculo.ano %></td>
-					<td><%= veiculo.status %></td>
+					<td><%= acesso.id_motorista %></td>
+					<td><%= acesso.data_hora_entrada %></td>
+					<td><%= acesso.status_veiculo %></td>
 				</tr>
+				<% } %>
+				<% }); %>
 				<% }); %>
 			</tbody>
 		</table>
-
 		<div class="filter">
 			<label>Filtrar por:</label>
 			<select id="filter-select">
@@ -52,45 +57,83 @@
 			</select>
 			<button class="btn" onclick="filterTable()">Aplicar</button>
 		</div>
-
 		<div class="alert">
 			<p><strong>Alerta:</strong> Um veículo suspeito foi detectado na portaria.</p>
 		</div>
-		</div>
 </body>
+
 </html>
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-		<script>
-			function atualizarDadosVeiculos() {
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script>
+	function atualizarDadosVeiculos() {
+		$.ajax({
+			url: '/veiculos',
+			method: 'GET',
+			dataType: 'json',
+			success: function (dataVeiculos) {
 				$.ajax({
-					url: '/veiculos',
+					url: '/acessos',
 					method: 'GET',
 					dataType: 'json',
-					success: function (data) {
-						$('#tabela-veiculos').empty();
-						data.forEach(function (veiculo) {
-							var linha = '<tr>' +
-								'<td>' + veiculo.placa + '</td>' +
-								'<td>' + veiculo.marca + '</td>' +
-								'<td>' + veiculo.modelo + '</td>' +
-								'<td>' + veiculo.cor + '</td>' +
-								'<td>' + veiculo.ano + '</td>' +
-								'<td>' + veiculo.status + '</td>' +
-								'</tr>';
-							$('#tabela-veiculos').append(linha);
+					success: function (dataAcessos) {
+						$.ajax({
+							url: '/motoristas',
+							method: 'GET',
+							dataType: 'json',
+							success: function (dataMotoristas) {
+								$('#tabela-veiculos').empty();
+								dataAcessos.forEach(function (acesso) {
+									var veiculo = dataVeiculos.find(function (
+										veiculo) {
+										return veiculo.placa === acesso
+											.placa_veiculo;
+									});
+									var motorista = dataMotoristas.find(
+										function (motorista) {
+											return motorista.id === acesso
+												.id_motorista;
+										});
+									if (veiculo && motorista) {
+										var dataEntradaFormatada = moment(
+												acesso.data_hora_entrada)
+											.format('DD/MM/YYYY HH:mm:ss');
+
+										var linha = '<tr>' +
+											'<td>' + acesso.placa_veiculo +
+											'</td>' +
+											'<td>' + veiculo.marca + '</td>' +
+											'<td>' + veiculo.modelo + '</td>' +
+											'<td>' + motorista.nome + '</td>' +
+											'<td>' + dataEntradaFormatada +
+											'</td>' +
+											'<td>' + acesso.status_veiculo +
+											'</td>' +
+											'</tr>';
+										$('#tabela-veiculos').append(linha);
+									}
+								});
+							},
+							error: function (error) {
+								console.error('Erro na requisição de motoristas:',
+									error);
+							}
 						});
 					},
 					error: function (error) {
-						console.error('Erro na requisição:', error);
+						console.error('Erro na requisição de acessos:', error);
 					}
 				});
+			},
+			error: function (error) {
+				console.error('Erro na requisição de veículos:', error);
 			}
-		
-			// Executar a função inicialmente
-			atualizarDadosVeiculos();
-		
-	// Executar a função a cada minuto
-	setInterval(atualizarDadosVeiculos, 60000);
+		});
+	}
+
+	atualizarDadosVeiculos();
+
+	setInterval(atualizarDadosVeiculos, 30000);
 
 	function filterTable() {
 		var filterValue = document.getElementById("filter-select").value;
