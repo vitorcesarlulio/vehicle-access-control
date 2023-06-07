@@ -6,7 +6,7 @@ import Main
 
 # Variaveis globais para controle
 # Fator de redução da taxa de quadros (exemplo: reduzindo pela metade)
-fator_reducao = 10 # 30 frames = 194.553291 segundos 20 frames = 
+FATOR_REDUCAO = 10 # 30 frames = 194.553291 segundos 20 frames = 
 # Define o tamanho desejado para redução do video
 largura = 640
 altura = 480
@@ -59,7 +59,7 @@ def decreaseFramesArray():
                 break
             
             # Processa o frame atual apenas a cada fator de redução
-            if count % fator_reducao == 0:
+            if count % FATOR_REDUCAO == 0:
                 # Redimensiona o frame
                 frame = cv2.resize(frame, (largura, altura))
 
