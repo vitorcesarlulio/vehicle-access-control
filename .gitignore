@@ -160,7 +160,4 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-useful/
-plates/
 video_plate_recognition.MOV
-debug/*
