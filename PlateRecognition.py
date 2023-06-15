@@ -8,6 +8,7 @@ import numpy as np
 from google.cloud import vision
 import Main
 import datetime
+import AccessControl
 
 SCORE_DETECTION_OBJECT = 0.75
 THRESHOLD_SIMILAR_PLATE = 1
@@ -117,31 +118,33 @@ def extractTextPlate(cut_plate_frame_bytes):
     texts = image_annotator.text_detection(
     image=image).text_annotations
 
-    if not texts:
-        extract_plates.append("Placa não identificada " + str(uuid.uuid4()))
+    if texts: #existe caracteres
+        # Criando regras regex (não valida nada ainda)
+        old_plate_pattern = re.compile(r'^[A-Z]{3}[0-9]{4}$')
+        new_plate_pattern = re.compile(r'^[A-Z]{3}[0-9][A-Z][0-9]{2}$')
 
-    # Criando regras regex (não valida nada ainda)
-    old_plate_pattern = re.compile(r'^[A-Z]{3}[0-9]{4}$')
-    new_plate_pattern = re.compile(r'^[A-Z]{3}[0-9][A-Z][0-9]{2}$')
+        for text in texts:
+            # Removendo caracteres da placa
+            clean_plate = text.description.replace(" ", "").replace("-", "")
 
-    for text in texts:
-        # Removendo caracteres da placa
-        clean_plate = text.description.replace(" ", "").replace("-", "")
-
-        """
-        1. Verifico se a string limpa possui 7 caracteres
-        2. Verifico se a string se encaixa nas regras regex de placas
-        3. Verifico se aquela placa já não existe em meu array de placas (pode ser mais eficiente verificar só ultima posição do array)
-        4. Verifico se a placa atual é diferente da ultima placa do array (quanto maior, mais diferentes são)
-        """
-        if len(clean_plate) == 7 and (old_plate_pattern.match(clean_plate) or new_plate_pattern.match(clean_plate)):
-            if not extract_plates or (extract_plates and clean_plate != extract_plates[-1] and clean_plate not in extract_plates) and (distance(clean_plate, extract_plates[-1]) > 1):
-                # ignorado os textos de um unico frame que venha só "-" ou "1234"
-                extract_plates.append(clean_plate)
-        else:
-            0==0
-            # SE NÃO É UMA PLACA JÁ ERA
-            # Só que, se ele identifocu texto da placa porem nao foi classificado como uma placa eu vou perder essa identificação/registro HOJE NAO É NECESSIDADE
-            # eu nem teria esse else na teoria, pq seria apenas um texto qualquer na imagem
-            # porem, dependendo do frame, da placa, angulo tals, ele pode extrair parte da placa (nao necessariamente nao extrair nenhum caractere)
-            #extract_plates.append("Placa não identificada " + str(randint(1, 100))) # essa parte do randomico pode ser falho
+            """
+            1. Verifico se a string limpa possui 7 caracteres
+            2. Verifico se a string se encaixa nas regras regex de placas
+            3. Verifico se aquela placa já não existe em meu array de placas (pode ser mais eficiente verificar só ultima posição do array)
+            4. Verifico se a placa atual é diferente da ultima placa do array (quanto maior, mais diferentes são) IMPORTANTE
+            """
+            if len(clean_plate) == 7 and (old_plate_pattern.match(clean_plate) or new_plate_pattern.match(clean_plate)):
+                if not extract_plates or (extract_plates and clean_plate != extract_plates[-1] and clean_plate not in extract_plates) and (distance(clean_plate, extract_plates[-1]) > 1):
+                    # ignorado os textos de um unico frame que venha só "-" ou "1234"
+                    extract_plates.append(clean_plate)
+                    AccessControl.main(clean_plate)
+            else:
+                0==0
+                # SE NÃO É UMA PLACA JÁ ERA
+                # Só que, se ele identifocu texto da placa porem nao foi classificado como uma placa eu vou perder essa identificação/registro HOJE NAO É NECESSIDADE
+                # eu nem teria esse else na teoria, pq seria apenas um texto qualquer na imagem
+                # porem, dependendo do frame, da placa, angulo tals, ele pode extrair parte da placa (nao necessariamente nao extrair nenhum caractere)
+                #extract_plates.append("Placa não identificada " + str(randint(1, 100))) # essa parte do randomico pode ser falho
+    else:
+        #extract_plates.append("NAO_IDENTIFICADO " + str(uuid.uuid4())) #pq eu coloquei um id unico?
+        extract_plates.append("3") #pq eu coloquei um id unico?

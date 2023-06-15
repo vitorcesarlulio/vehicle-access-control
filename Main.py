@@ -4,7 +4,7 @@ import PlateRecognition, ProcessVideo, Useful
 
 # Variaveis globais para controle
 debug = 1
-video_path = 'video_plate_recognition.MOV'
+video_path = 'assets/video_plate_recognition.MOV'
 
 def main():
 

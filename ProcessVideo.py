@@ -6,7 +6,18 @@ import Main
 
 # Variaveis globais para controle
 # Fator de redução da taxa de quadros (exemplo: reduzindo pela metade)
-FATOR_REDUCAO = 10 # 30 frames = 194.553291 segundos 20 frames = 
+FATOR_REDUCAO = 40 
+"""
+40 frames = 234.484329 segundos
+    ['FVP1260', 'BSV4837', '3', '3']
+
+30 frames = 194.553291 segundos
+
+20 frames = 
+
+10 frames = 342.840185 segundos
+    ['FVP1260', '3', 'ELR3137', '3', '3', 'OSV4837', '3', '3', '3', '3', '3', '3', '3']
+"""
 # Define o tamanho desejado para redução do video
 largura = 640
 altura = 480
