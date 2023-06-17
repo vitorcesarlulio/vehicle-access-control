@@ -1,28 +1,23 @@
+const { DataTypes } = require('sequelize');
 const db = require('./db');
-sequelize = db.sequelize,
-  Sequelize = db.Sequelize;
 
-const {
-  DataTypes
-} = require('sequelize');
-const Alertas = db.sequelize.define('alertas', {
+const Alerta = db.sequelize.define('Alerta', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
-  tipo_status: {
-    type: DataTypes.STRING(50),
+  status_veiculo: {
+    type: DataTypes.INTEGER,
     allowNull: false,
-    unique: true,
-    index: {
-      name: 'idx_tipo_status',
-      type: 'INDEX'
+    references: {
+      model: 'status_veiculo',
+      key: 'id'
     }
   }
 }, {
-  tableName: 'alertas',
+  tableName: 'alerta',
   timestamps: false
 });
 
-module.exports = Alertas;
+module.exports = Alerta;

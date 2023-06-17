@@ -1,55 +1,49 @@
 const db = require('./db');
-sequelize = db.sequelize,
-  Sequelize = db.Sequelize;
+const { DataTypes } = require('sequelize');
+const Alerta = require('./alertas'); // Importe o modelo Alerta
 
-const Veiculos = require('./veiculos');
-const Motoristas = require('./motoristas');
-const Alertas = require('./alertas');
-
-const {
-  DataTypes
-} = require('sequelize');
-const Acessos = db.sequelize.define('acessos', {
+const Acesso = db.sequelize.define('Acesso', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
   placa_veiculo: {
-    type: DataTypes.STRING(10)
+    type: DataTypes.STRING(7),
+    allowNull: true
   },
   id_motorista: {
-    type: DataTypes.INTEGER
+    type: DataTypes.INTEGER,
+    allowNull: true
   },
   status_veiculo: {
-    type: DataTypes.STRING(50),
-    allowNull: false
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: Alerta, // Corrija para Alerta
+      key: 'id'
+    }
   },
   data_hora_entrada: {
-    type: DataTypes.DATE
+    type: DataTypes.DATE,
+    allowNull: false
   },
   data_hora_saida: {
-    type: DataTypes.DATE
+    type: DataTypes.DATE,
+    allowNull: false
   }
 }, {
   tableName: 'acessos',
   timestamps: false
 });
 
-Acessos.belongsTo(Veiculos, {
-  foreignKey: 'placa_veiculo'
-});
-Acessos.belongsTo(Motoristas, {
-  foreignKey: 'id_motorista'
-});
-Acessos.belongsTo(Alertas, {
+Acesso.belongsTo(Alerta, {
   foreignKey: 'status_veiculo'
 });
 
-
 function atualizarConsulta() {
-  Acessos.findAll().then(Acessoss => {
-    console.log(Acessoss);
+  Acesso.findAll().then(Acessos => {
+    console.log(Acessos);
   }).catch(error => {
     console.error('Erro na consulta:', error);
   });
@@ -57,4 +51,4 @@ function atualizarConsulta() {
 atualizarConsulta();
 setInterval(atualizarConsulta, 30000);
 
-module.exports = Acessos;
+module.exports = Acesso;
