@@ -3,7 +3,7 @@ from distutils.log import debug
 import PlateRecognition, ProcessVideo, Useful
 
 # Variaveis globais para controle
-debug = 1
+debug = 0
 video_path = 'assets/video_plate_recognition.MOV'
 
 def main():

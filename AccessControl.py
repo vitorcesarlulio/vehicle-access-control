@@ -119,8 +119,8 @@ def insert_access(placa, status, conn):
     cursor = conn.cursor()
 
     consulta_inserir = """
-    INSERT INTO acessos (placa_veiculo, status_veiculo, data_hora_entrada)
-    VALUES (%s, %s, NOW())
+    INSERT INTO acessos (placa_veiculo, status_veiculo, data_hora_entrada, data_hora_saida)
+    VALUES (%s, %s, NOW(), null)
     """
     dados_inserir = (placa, status)
 
@@ -158,7 +158,7 @@ def there_access_update(placa, conn):
     consulta_verificar = """
     SELECT id FROM acessos
     WHERE placa_veiculo =  %s 
-    AND data_hora_saida = "0000-00-00 00:00:00"
+    AND data_hora_saida is null
     AND data_hora_entrada BETWEEN NOW() - INTERVAL %s MINUTE AND NOW()
     ORDER BY id DESC
     LIMIT 1
