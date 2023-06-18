@@ -16,14 +16,6 @@ def main():
     # Processo video
     ProcessVideo.main()
 
-    # Reconhece objetos e extrai texto da placa
-    # plateRecognition = PlateRecognition.main()
-
-    # Valida a placa
-    print("Placas: ", PlateRecognition.extract_plates)
-    # accessControl = AccessControl.main()
-
-
 if __name__ == "__main__":
     inicio = time.time() if debug else 0
 

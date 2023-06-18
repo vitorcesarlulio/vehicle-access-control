@@ -137,7 +137,7 @@ def extractTextPlate(cut_plate_frame_bytes):
                 if not extract_plates or (extract_plates and clean_plate != extract_plates[-1] and clean_plate not in extract_plates) and (distance(clean_plate, extract_plates[-1]) > 1):
                     # ignorado os textos de um unico frame que venha só "-" ou "1234"
                     extract_plates.append(clean_plate)
-                    AccessControl.main(clean_plate)
+                    AccessControl.main(extract_plates[-1])
             else:
                 0==0
                 # SE NÃO É UMA PLACA JÁ ERA
@@ -146,5 +146,5 @@ def extractTextPlate(cut_plate_frame_bytes):
                 # porem, dependendo do frame, da placa, angulo tals, ele pode extrair parte da placa (nao necessariamente nao extrair nenhum caractere)
                 #extract_plates.append("Placa não identificada " + str(randint(1, 100))) # essa parte do randomico pode ser falho
     else:
-        #extract_plates.append("NAO_IDENTIFICADO " + str(uuid.uuid4())) #pq eu coloquei um id unico?
-        extract_plates.append("3") #pq eu coloquei um id unico?
+        extract_plates.append("3")
+        AccessControl.main(extract_plates[-1])

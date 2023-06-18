@@ -33,9 +33,6 @@ class VeiculoStatus:
 
 
 def main(placa):
-    #placa = "FVP1260"
-    print("Placa: ", placa)
-
     conn = connect_database()
 
     if not there_access(placa, conn):
