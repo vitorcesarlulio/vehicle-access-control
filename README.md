@@ -38,6 +38,14 @@ Aplicativo para controle de acesso de veículos para faculdade
 ### Pré-requisitos
 
 ### Instalação
+  Front-end
+  Instalando dependencias do package.json
+	  npm install
+
+  Rodando aplicação
+    node app.js
+
+  [localhost:](http://localhost:8098/)
 
 #### Dependências
 pip install -r requirements.txt
