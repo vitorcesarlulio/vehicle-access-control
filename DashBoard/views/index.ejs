@@ -22,11 +22,11 @@
 		<table>
 			<thead>
 				<tr>
-					<th>Numero de acesso</th>
+					<th>Acesso</th>
 					<th>Placa</th>
-					<th>Entrada - Data e Hora</th>
-					<th>id_Motorista</th>
 					<th>Status do Veículo</th>
+					<th>Entrada - Data e Hora</th>
+					<th>Saida - Data e Hora</th>
 				</tr>
 			</thead>
 			<tbody id="tabela-veiculos">
@@ -34,8 +34,6 @@
 					<tr>
 					  <td><%= acesso.id %></td>
 					  <td><%= acesso.placa_veiculo %></td>
-					  <td><%= acesso.data_hora_entrada %></td>
-					  <td><%= acesso.id_motorista %></td>
 					  <td>
 						<% if (acesso.status_veiculo === 1) { %>
 						  Aprovado
@@ -45,6 +43,8 @@
 						  Não identificado
 						<% } %>
 					  </td>
+					  <td><%= acesso.data_hora_entrada %></td>
+					  <td><%= acesso.data_hora_saida %></td>
 					</tr>
 				  <% }); %>				  
 			</tbody>
@@ -77,13 +77,15 @@
       $('#tabela-veiculos').empty();
       dataAcessos.forEach(function(acesso) {
         var dataEntradaFormatada = moment(acesso.data_hora_entrada).format('DD/MM/YYYY HH:mm:ss');
+        var dataSaidaFormatada = moment(acesso.data_hora_saida).format('DD/MM/YYYY HH:mm:ss');
         var statusVeiculo = getStatusVeiculo(acesso.status_veiculo);
         var linha = '<tr>' +
           '<td>' + acesso.id + '</td>' +
           '<td>' + acesso.placa_veiculo + '</td>' +
-          '<td>' + dataEntradaFormatada + '</td>' +
-          '<td>' + acesso.id_motorista + '</td>' +
           '<td>' + statusVeiculo + '</td>' +
+          '<td>' + dataEntradaFormatada + '</td>' +
+          '<td>' + dataSaidaFormatada + '</td>' +
+        //   '<td>' + acesso.id_motorista + '</td>' +
           '</tr>';
         $('#tabela-veiculos').append(linha);
       });
