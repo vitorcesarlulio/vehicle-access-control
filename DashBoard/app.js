@@ -14,7 +14,7 @@ app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 
 app.get('/', (req, res) => {
-  Acesso.findAll({
+  Acessos.findAll({
     attributes: ['id', 'placa_veiculo', 'id_motorista', 'status_veiculo', 'data_hora_entrada', 'data_hora_saida']
   })
   .then((acessos) => {
