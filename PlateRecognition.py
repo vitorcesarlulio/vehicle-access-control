@@ -1,3 +1,4 @@
+import tkinter
 from Levenshtein import distance
 from random import randint
 import uuid
@@ -60,12 +61,26 @@ def findObjects(frame_bytes):
         if object.name == 'License plate' and object.score >= SCORE_DETECTION_OBJECT:
             if Main.debug:
                 file_name = datetime.datetime.now().strftime("identified_plate_%H-%M-%S_%f")[:-3] + ".jpg"
-                # Salvando frame que contem um objeto de placa, pra usar de debug
-                cv2.imwrite(os.path.join('debug/identified_plate/', f'{file_name}'), cv2.imdecode(np.frombuffer(frame_bytes, np.uint8), cv2.IMREAD_COLOR))
 
+                frame_identified_plate = cv2.imdecode(np.frombuffer(frame_bytes, np.uint8), cv2.IMREAD_COLOR)
+                # Salvando frame que contem um objeto de placa, pra usar de debug
+                cv2.imwrite(os.path.join('debug/identified_plate/', f'{file_name}'), frame_identified_plate)
             # Insere em um array as posições X e Y dos pontos que formam a placa
             for vertex in object.bounding_poly.normalized_vertices:
                 plate_vertices.append([vertex.x, vertex.y])
+
+            if Main.debug:
+                frame_identified_plate = cv2.imdecode(np.frombuffer(frame_bytes, np.uint8), cv2.IMREAD_COLOR)
+                altura_imagem, largura_imagem, _ = frame_identified_plate.shape
+                # Converter coordenadas de proporção para pixel
+                coordenadas_pixel = []
+                for ponto in plate_vertices:
+                    x = int(ponto[0] * largura_imagem)
+                    y = int(ponto[1] * altura_imagem)
+                    coordenadas_pixel.append((x, y))
+                imagem_com_retangulo = cv2.rectangle(frame_identified_plate, coordenadas_pixel[0], coordenadas_pixel[2], (0, 255, 0), 2)
+
+                cv2.imshow('Identified Plate Frame', imagem_com_retangulo)
 
     return plate_vertices
 
@@ -105,6 +120,8 @@ def cutPlateFrame(plate_vertices, frame_bytes):
         file_name = datetime.datetime.now().strftime("cut_plate_%H-%M-%S_%f")[:-3] + ".jpg"
         # Salvando imagem da placa recortada
         cv2.imwrite(os.path.join('debug/cut_plate/', f'{file_name}'), cut_frame)
+
+        cv2.imshow('Cut Plate Frame', cut_frame)
 
     # Incode da imagem em bytes
     cut_plate_frame_bytes = cv2.imencode('.jpg', cut_frame)[1].tobytes()
