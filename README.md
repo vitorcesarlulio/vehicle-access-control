@@ -1,10 +1,10 @@
 <div align="center">
-    <img src="assets/open-market-logo.png" alt="logo" width="200" height="auto" id="assistente-openMarket"/>
+    <img src="assets/vehicle-access-control-logo.png" alt="logo" width="200" height="auto" id="vehicle-access-control-logo"/>
     <h1 >Controle de acesso de veículos</h1>
     <h4>
-        <a href="" target="_blank">Documentação</a>
+        <a href="https://github.com/vitorcesarlulio/vehicle-access-control/blob/main/assets/vehicle-access-control-documentation.pdf" target="_blank">Documentação</a>
         <span> · </span>
-        <a href="https://vitorcesarlulio.github.io/" target="_blank">Veja você mesmo</a>
+        <a href="https://github.com/vitorcesarlulio/vehicle-access-control/" target="_blank">Veja você mesmo</a>
     </h4>
 </div>
 
